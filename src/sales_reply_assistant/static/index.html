@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Sales Reply Assistant</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%232f6fed'/%3E%3Cpath d='M16 7l2.4 6.6L25 16l-6.6 2.4L16 25l-2.4-6.6L7 16l6.6-2.4z' fill='white'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="styles.css">
+  <script type="module" src="app.js"></script>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand__logo" aria-hidden="true">✦</span>
+      <div>
+        <div class="brand__title">Sales Reply Assistant</div>
+        <div class="brand__subtitle" id="company"></div>
+      </div>
+    </div>
+    <div class="status" id="status" data-state="pending" title="">
+      <span class="status__dot" aria-hidden="true"></span>
+      <span id="status-text">Проверяю модель…</span>
+    </div>
+  </header>
+
+  <main class="workspace">
+    <aside class="panel deal" aria-label="Карточка сделки">
+      <h2 class="panel__title">Сделка #1024</h2>
+      <dl class="fields">
+        <div class="fields__row"><dt>Этап</dt><dd><span class="badge">Новое обращение</span></dd></div>
+        <div class="fields__row"><dt>Канал</dt><dd>Чат на сайте</dd></div>
+        <div class="fields__row">
+          <dt><label for="client-name">Контакт</label></dt>
+          <dd><input class="input" id="client-name" value="Мария" maxlength="80" autocomplete="off" placeholder="Имя не указано"></dd>
+        </div>
+      </dl>
+
+      <h3 class="panel__subtitle">Сценарии для демо</h3>
+      <p class="muted small">Клик отправляет сообщение от имени клиента.</p>
+      <div class="examples" id="examples"></div>
+
+      <button class="button button--ghost deal__reset" id="reset" type="button">Очистить диалог</button>
+    </aside>
+
+    <section class="panel chat" aria-label="Чат с клиентом">
+      <div class="chat__header">
+        <span class="avatar" id="chat-avatar" aria-hidden="true">М</span>
+        <div>
+          <div class="chat__name" id="chat-name">Мария</div>
+          <div class="muted small">онлайн-чат</div>
+        </div>
+      </div>
+      <div class="chat__feed" id="feed" aria-live="polite"></div>
+      <form class="composer" id="composer">
+        <textarea class="input composer__input" id="composer-input" rows="2"
+          placeholder="Сообщение от имени клиента…" aria-label="Сообщение клиента"></textarea>
+        <button class="button button--primary" type="submit">Отправить</button>
+      </form>
+      <p class="composer__hint muted small">
+        Демо: вы пишете за клиента, помощник готовит ответ для менеджера.
+        Enter — отправить, Shift+Enter — новая строка.
+      </p>
+    </section>
+
+    <aside class="panel assistant" aria-label="ИИ-помощник менеджера">
+      <div class="assistant__header">
+        <h2 class="panel__title">ИИ-помощник</h2>
+        <span class="muted small">видит только менеджер</span>
+      </div>
+      <div class="assistant__body" id="assistant"></div>
+    </aside>
+  </main>
+</body>
+</html>

@@ -1,0 +1,59 @@
+[project]
+name = "sales-reply-assistant"
+version = "0.1.0"
+description = "AI copilot for sales managers: drafts a grounded reply to the client and an upsell hint from a small knowledge base."
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.12"
+authors = [{ name = "Denis" }]
+dependencies = [
+    "fastapi>=0.115",
+    "numpy>=2.0",
+    "openai>=1.60",
+    "pydantic>=2.9",
+    "pydantic-settings>=2.6",
+    "pyyaml>=6.0",
+    "uvicorn>=0.32",
+]
+
+[project.scripts]
+sales-reply-assistant = "sales_reply_assistant.__main__:main"
+sales-reply-eval = "sales_reply_assistant.evals:main"
+
+[dependency-groups]
+dev = [
+    "httpx>=0.27",
+    "mypy>=1.13",
+    "pytest>=8.3",
+    "pytest-asyncio>=0.24",
+    "ruff>=0.8",
+    "types-pyyaml>=6.0",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/sales_reply_assistant"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "N", "B", "UP", "SIM", "C4", "RET", "PT", "ASYNC", "RUF"]
+# Cyrillic text in prompts, UI strings and comments is intentional.
+ignore = ["RUF001", "RUF002", "RUF003"]
+
+[tool.mypy]
+strict = true
+python_version = "3.12"
+mypy_path = "src"
+packages = ["sales_reply_assistant"]
+plugins = ["pydantic.mypy"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
