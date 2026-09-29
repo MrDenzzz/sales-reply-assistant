@@ -80,6 +80,22 @@ async def test_hides_products_and_pitch_when_upsell_is_inappropriate(
     assert suggestion.upsell.hint == "Сначала решите проблему."
 
 
+async def test_drops_pitch_that_repeats_the_reply(knowledge_base: KnowledgeBase) -> None:
+    model = ScriptedChatModel(
+        draft(
+            reply="Для порошков рекомендую наш шейкер.",
+            upsell_product_ids=["shaker"],
+            upsell_pitch="Кстати, добавьте к заказу шейкер!",
+        )
+    )
+
+    suggestion = await make_assistant(knowledge_base, model).suggest(REQUEST)
+
+    assert suggestion.upsell.pitch == ""
+    assert suggestion.upsell.hint  # the manager still sees what to offer
+    assert [product.id for product in suggestion.upsell.products] == ["shaker"]
+
+
 async def test_flags_medical_claims_in_the_reply(knowledge_base: KnowledgeBase) -> None:
     model = ScriptedChatModel(draft(reply="Этот набор вылечит ваш гастрит!"))
 
@@ -98,6 +114,28 @@ async def test_retries_with_feedback_after_invalid_output(knowledge_base: Knowle
     retry_messages = model.requests[1]["messages"]
     assert retry_messages[-2] == {"role": "assistant", "content": '{"reply": "обрыв'}
     assert "не прошёл проверку" in retry_messages[-1]["content"]
+
+
+async def test_asks_to_rewrite_a_reply_that_slips_into_english(
+    knowledge_base: KnowledgeBase,
+) -> None:
+    model = ScriptedChatModel(
+        draft(reply="Уточню и вернусь, meanwhile расскажу о доставке."),
+        draft(reply="Уточню и вернусь, а пока расскажу о доставке."),
+    )
+
+    suggestion = await make_assistant(knowledge_base, model).suggest(REQUEST)
+
+    assert suggestion.reply == "Уточню и вернусь, а пока расскажу о доставке."
+    assert "meanwhile" in model.requests[1]["messages"][-1]["content"]
+
+
+async def test_keeps_the_draft_when_english_persists(knowledge_base: KnowledgeBase) -> None:
+    model = ScriptedChatModel(draft(reply="Okay, anyway."), draft(reply="Sure, anyway!"))
+
+    suggestion = await make_assistant(knowledge_base, model).suggest(REQUEST)
+
+    assert suggestion.reply == "Sure, anyway!"  # style is not worth failing the request
 
 
 async def test_gives_up_after_max_attempts(knowledge_base: KnowledgeBase) -> None:

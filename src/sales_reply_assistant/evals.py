@@ -35,6 +35,8 @@ class Expectations(BaseModel):
     reply_contains_any: list[str] = Field(default_factory=list)
     reply_excludes: list[str] = Field(default_factory=list)
     upsell_excludes: list[str] = Field(default_factory=list)
+    # The pitch is appended to the reply, so these terms must not appear in both.
+    not_repeated_in_pitch: list[str] = Field(default_factory=list)
 
 
 class EvalCase(BaseModel):
@@ -61,6 +63,8 @@ def check(suggestion: Suggestion, case: EvalCase) -> list[str]:
     failures: list[str] = []
     if case.client_name is None and (name := _invented_name(suggestion.reply)):
         failures.append(f"reply addresses the client as {name!r}, but the name is unknown")
+    if english := _ENGLISH_WORD.findall(suggestion.reply):
+        failures.append(f"reply switches to English: {english}")
     if expect.needs_attention is not None and suggestion.needs_attention != expect.needs_attention:
         failures.append(
             f"needs_attention={suggestion.needs_attention}, expected {expect.needs_attention}"
@@ -95,11 +99,20 @@ def check(suggestion: Suggestion, case: EvalCase) -> list[str]:
     failures.extend(
         f"upsell must not contain {s!r}" for s in expect.upsell_excludes if s.lower() in upsell
     )
+    pitch = suggestion.upsell.pitch.lower()
+    failures.extend(
+        f"pitch repeats {s!r} already offered in the reply"
+        for s in expect.not_repeated_in_pitch
+        if s.lower() in reply and s.lower() in pitch
+    )
     failures.extend(f"compliance: {warning}" for warning in suggestion.compliance_warnings)
     return failures
 
 
 _ADDRESS = re.compile(r"^([А-ЯЁ][а-яё]+),")
+# Small multilingual models sometimes slip into English mid-sentence ("meanwhile могу…").
+# Lowercase words only: product names and abbreviations (D3, EPA, СДЭК) are fine.
+_ENGLISH_WORD = re.compile(r"\b[a-z]{3,}\b")
 _GREETINGS = {"Здравствуйте", "Привет", "Добрый", "Спасибо", "Извините", "Простите", "Понимаю"}
 
 

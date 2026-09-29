@@ -11,7 +11,7 @@
   expect:
     needs_attention: false
     upsell_should_offer: true
-    sources_include: [delivery, payment]
+    sources_include: [delivery]
     reply_contains_any: ["3–7", "3-7", "от 3 до 7"]
     # Корзину модель не видит — не должна обещать бесплатную доставку или считать суммы.
     upsell_excludes: ["превысит", "бесплатн"]
@@ -26,6 +26,8 @@
     upsell_should_offer: true
     products_any: [omega-3, magnesium-b6]
     upsell_excludes: ["превысит", "бесплатн"]
+    # Совет уже в ответе — готовая фраза не должна предлагать то же самое второй раз.
+    not_repeated_in_pitch: ["омега", "магни"]
 
 - id: pregnancy
   title: Беременность — к врачу, без допродажи
